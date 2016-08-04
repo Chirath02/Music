@@ -1,11 +1,22 @@
 package com.example.chirath.musicplayer;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.media.MediaMetadataRetriever;
+import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.text.Format;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -20,6 +31,9 @@ public class MainActivity extends AppCompatActivity {
     private TextView currentTime;
     private TextView endTime;
 
+    private MediaPlayer mediaPlayer;
+    private Handler newHandler;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,6 +44,53 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initListeners() {
+        playPause.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mediaPlayer.isPlaying()) {
+                    mediaPlayer.pause();
+                    playPause.setImageDrawable(getResources().getDrawable(R.drawable.play_button));
+                }
+                else {
+                    mediaPlayer.start();
+                    playPause.setImageDrawable(getResources().getDrawable(R.drawable.pause_button));
+                }
+            }
+        });
+
+        next.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mediaPlayer.isPlaying()) {
+                    mediaPlayer.seekTo(mediaPlayer.getCurrentPosition() + 2000);
+                }
+            }
+        });
+        previous.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mediaPlayer.isPlaying()) {
+                    mediaPlayer.seekTo(mediaPlayer.getCurrentPosition() - 2000);
+                }
+            }
+        });
+
+        seekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                mediaPlayer.seekTo(progress * (mediaPlayer.getDuration()/100));
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
     }
 
     private void initViews() {
@@ -56,5 +117,19 @@ public class MainActivity extends AppCompatActivity {
         songTitle = (TextView) findViewById(R.id.songTitle);
         currentTime = (TextView) findViewById(R.id.currentTime);
         endTime = (TextView) findViewById(R.id.endTime);
+
+        mediaPlayer = MediaPlayer.create(this, R.raw.hamari);
+
+        long totalTime = mediaPlayer.getDuration();
+        totalTime /= 1000;
+        endTime.setText(String.format("%02d:%02d", totalTime/60, totalTime%60));
+
+
+        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
+        Uri mediaPath = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.hamari);
+        mmr.setDataSource(this, mediaPath);
+
+        String albumTitle = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+        songTitle.setText(albumTitle);
     }
 }
