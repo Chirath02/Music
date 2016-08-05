@@ -159,8 +159,6 @@ public class MainActivity extends AppCompatActivity {
         long totaltime = mediaPlayer.getDuration();
         totaltime /= 1000;
         int seek = (int)(((float)time/totaltime) * 100);
-        Log.i("time", String.valueOf(seek));
-
         seekbar.setProgress(seek);
     }
 
