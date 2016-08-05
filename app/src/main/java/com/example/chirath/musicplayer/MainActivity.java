@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                mediaPlayer.pause();
+                mediaPlayer.start();
             }
         });
     }
