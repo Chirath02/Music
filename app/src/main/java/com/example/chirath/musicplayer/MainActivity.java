@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -32,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView endTime;
 
     private MediaPlayer mediaPlayer;
-    private Handler newHandler;
+    private Handler newHandler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
                 else {
                     mediaPlayer.start();
                     playPause.setImageDrawable(getResources().getDrawable(R.drawable.pause_button));
+                    currentTime.post(mUpdateTime);
                 }
             }
         });
@@ -62,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(mediaPlayer.isPlaying()) {
-                    mediaPlayer.seekTo(mediaPlayer.getCurrentPosition() + 2000);
+                    mediaPlayer.seekTo(mediaPlayer.getCurrentPosition() + 5000);
                 }
             }
         });
@@ -70,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(mediaPlayer.isPlaying()) {
-                    mediaPlayer.seekTo(mediaPlayer.getCurrentPosition() - 2000);
+                    mediaPlayer.seekTo(mediaPlayer.getCurrentPosition() - 5000);
                 }
             }
         });
@@ -83,12 +85,12 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
+                mediaPlayer.pause();
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
+                mediaPlayer.pause();
             }
         });
     }
@@ -124,6 +126,8 @@ public class MainActivity extends AppCompatActivity {
         totalTime /= 1000;
         endTime.setText(String.format("%02d:%02d", totalTime/60, totalTime%60));
 
+        currentTime.setText(String.format("%02d:%02d", 0, 0));
+
 
         MediaMetadataRetriever mmr = new MediaMetadataRetriever();
         Uri mediaPath = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.hamari);
@@ -131,5 +135,33 @@ public class MainActivity extends AppCompatActivity {
 
         String albumTitle = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
         songTitle.setText(albumTitle);
+
+        seekbar.setProgress(0);
     }
+
+
+    private Runnable mUpdateTime = new Runnable() {
+        public void run() {
+            int currentDuration;
+            if (mediaPlayer.isPlaying()) {
+                currentDuration = mediaPlayer.getCurrentPosition();
+                updatePlayer(currentDuration);
+                currentTime.postDelayed(this, 1000);
+            }else {
+                currentTime.removeCallbacks(this);
+            }
+        }
+    };
+
+    private void updatePlayer(int time) {
+        time /= 1000;
+        currentTime.setText(String.format("%02d:%02d", time/60, time%60));
+        long totaltime = mediaPlayer.getDuration();
+        totaltime /= 1000;
+        int seek = (int)(((float)time/totaltime) * 100);
+        Log.i("time", String.valueOf(seek));
+
+        seekbar.setProgress(seek);
+    }
+
 }

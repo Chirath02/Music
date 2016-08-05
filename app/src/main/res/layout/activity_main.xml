@@ -59,7 +59,7 @@
 
     <TextView
         android:text="1:52"
-        android:layout_width="43dp"
+        android:layout_width="51dp"
         android:layout_height="21dp"
         android:id="@+id/currentTime"
         android:textStyle="normal|bold"
